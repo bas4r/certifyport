@@ -580,19 +580,19 @@ exports.tn_calculatePrice = async (req, res, next) => {
 
     const eosPrice = parseInt((usagePriceEos*10000).toString().slice(0, 6), 10)/10000
 
-    const {price} = await cryptoTickerPrice.getCryptoPrice('USD', 'EOS')
+    const {price} = await cryptoTickerPrice.getCryptoPrice('GBP', 'EOS')
 
-    const usdPrice = parseInt((eosPrice * price*100).toString().slice(0, 4), 10)/100
+    const gbpPrice = parseInt((eosPrice * price*100).toString().slice(0, 4), 10)/100
 
     const result = {
       totalBytes,
       eosPrice: eosPrice,
-      usdPrice: usdPrice
+      gbpPrice: gbpPrice
     }
     return res.status(200).json({
       success: true,
       errorCode: "",
-      message: "Estimated USD fee for creation is $" + usdPrice,
+      message: "Estimated USD fee for creation is £" + gbpPrice,
       data: result
     });
     
