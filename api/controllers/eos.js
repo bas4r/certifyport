@@ -592,7 +592,7 @@ exports.tn_calculatePrice = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       errorCode: "",
-      message: "Estimated USD fee for creation is £" + gbpPrice,
+      message: "Estimated fee for creation is £" + gbpPrice,
       data: result
     });
     
