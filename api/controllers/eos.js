@@ -560,39 +560,53 @@ async function blockHasTransaction(block, transactionId) {
 
 exports.tn_calculatePrice = async (req, res, next) => {
   try {
-    const signerCreationPrice = 3048
-    const corporateCreationPrice = 143
-    const certificateCreationPrice = 124
-    const addingSignerPrice = 9
-    const addingParticipantPrice = 8
-
     const { signer_create: signerCreate, corporate_create: corporateCreate, signer_add: signerAdd, participant_add: participantAdd } = req.body
 
-    const totalBytes = (signerCreate * signerCreationPrice) + (corporateCreate * corporateCreationPrice) + 
-      (1 * certificateCreationPrice) + (signerAdd * addingSignerPrice) + (participantAdd * addingParticipantPrice) + 20
+    const certificateBytes = 124
+    const signerCreateBytes = signerCreate * 3048
+    const corporateCreateBytes = corporateCreate * 143
+    const addingSignerBytes = signerAdd * 9
+    const addingParticipantBytes = participantAdd * 8
+    const stringLengthEstimation = 20
+    const totalBytes =  certificateBytes + signerCreateBytes + corporateCreateBytes + addingSignerBytes + addingParticipantBytes + stringLengthEstimation
 
     const {quote , base} = await getTable('eosio', 'rammarket', 'eosio')
     const quoteBalance = quote.balance.slice(0,-4)
     const baseBalance = base.balance.slice(0,-4)
     const ramPriceEOS = quoteBalance / (baseBalance * quote.weight)
 
-    const usagePriceEos = ramPriceEOS * totalBytes
 
-    const eosPrice = parseInt((usagePriceEos*10000).toString().slice(0, 6), 10)/10000
 
+    const eosPriceEstimates = {
+      totalEstimate: parseInt((ramPriceEOS * totalBytes*10000).toString().slice(0, 6), 10)/10000,
+      certificate: parseInt((ramPriceEOS * certificateBytes*10000).toString().slice(0, 6), 10)/10000,
+      createSigner: parseInt((ramPriceEOS * signerCreateBytes*10000).toString().slice(0, 6), 10)/10000,
+      createCorporate: parseInt((ramPriceEOS * corporateCreateBytes*10000).toString().slice(0, 6), 10)/10000,
+      addSigner: parseInt((ramPriceEOS * addingSignerBytes*10000).toString().slice(0, 6), 10)/10000,
+      addParticipant: parseInt((ramPriceEOS * addingParticipantBytes*10000).toString().slice(0, 6), 10)/10000
+    }
+    console.log('EOS PRICE: ', eosPriceEstimates)
     const {price} = await cryptoTickerPrice.getCryptoPrice('GBP', 'EOS')
-
-    const gbpPrice = parseInt((eosPrice * price*100).toString().slice(0, 4), 10)/100
+    console.log('PRICE: ', price)
+    const gbpPriceEstimates = {
+      totalEstimate: parseInt((eosPriceEstimates.totalEstimate * price*100).toString().slice(0, 4), 10)/100,
+      certificate: parseInt((eosPriceEstimates.certificate * price*100).toString().slice(0, 4), 10)/100,
+      createSigner: parseInt((eosPriceEstimates.createSigner * price*100).toString().slice(0, 4), 10)/100,
+      createCorporate: parseInt((eosPriceEstimates.createCorporate * price*100).toString().slice(0, 4), 10)/100,
+      addSigner: parseInt((eosPriceEstimates.addSigner * price*100).toString().slice(0, 4), 10)/100,
+      addParticipant: parseInt((eosPriceEstimates.addParticipant * price*100).toString().slice(0, 4), 10)/100
+    }
+    console.log('GBP: ', gbpPriceEstimates)
 
     const result = {
       totalBytes,
-      eosPrice: eosPrice,
-      gbpPrice: gbpPrice
+      eosPrice: eosPriceEstimates,
+      gbpPrice: gbpPriceEstimates
     }
     return res.status(200).json({
       success: true,
       errorCode: "",
-      message: "Estimated fee for creation is £" + gbpPrice,
+      message: "Estimated fee for creation is £" + result.gbpPrice,
       data: result
     });
     
@@ -716,7 +730,6 @@ async function getTable(contract, tableName, scope, key) {
     show_payer: false,         // Optional: Show ram payer
     limit: 1,
   });
-  console.log('RESULTS: ', results)
   if (results.rows.length == 0) {
     throw new Error("No index found in " + tableName + " table with the key value: " + key);
   }
