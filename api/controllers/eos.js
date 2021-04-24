@@ -578,23 +578,31 @@ exports.tn_calculatePrice = async (req, res, next) => {
 
 
     const eosPriceEstimates = {
-      totalEstimate: parseInt((ramPriceEOS * totalBytes*10000).toString().slice(0, 6), 10)/10000,
-      certificate: parseInt((ramPriceEOS * certificateBytes*10000).toString().slice(0, 6), 10)/10000,
-      createSigner: parseInt((ramPriceEOS * signerCreateBytes*10000).toString().slice(0, 6), 10)/10000,
-      createCorporate: parseInt((ramPriceEOS * corporateCreateBytes*10000).toString().slice(0, 6), 10)/10000,
-      addSigner: parseInt((ramPriceEOS * addingSignerBytes*10000).toString().slice(0, 6), 10)/10000,
-      addParticipant: parseInt((ramPriceEOS * addingParticipantBytes*10000).toString().slice(0, 6), 10)/10000
+      totalEstimate: (ramPriceEOS * totalBytes).toFixed(4),
+      certificate: (ramPriceEOS * certificateBytes).toFixed(4),
+      createSigner: (ramPriceEOS * signerCreateBytes).toFixed(4),
+      createCorporate: (ramPriceEOS * corporateCreateBytes).toFixed(4),
+      addSigner: (ramPriceEOS * addingSignerBytes).toFixed(4),
+      addParticipant: (ramPriceEOS * addingParticipantBytes).toFixed(4)
     }
-    console.log('EOS PRICE: ', eosPriceEstimates)
+    console.log('here', eosPriceEstimates)
     const {price} = await cryptoTickerPrice.getCryptoPrice('GBP', 'EOS')
-    console.log('PRICE: ', price)
+    const certificatePrice = Number((eosPriceEstimates.certificate * price).toFixed(4))
+    console.log('here2', certificatePrice)
+    const createSignerPrice = Number((eosPriceEstimates.createSigner * price).toFixed(4))
+    const createCorporatePrice = Number((eosPriceEstimates.createCorporate * price).toFixed(4))
+    const addSignerPrice = Number((eosPriceEstimates.addSigner * price).toFixed(4))
+    const addParticipantPrice = Number((eosPriceEstimates.addParticipant * price).toFixed(4))
+    console.log('here2', addParticipantPrice)
+    const totalEstimatePrice = Number((certificatePrice + createSignerPrice + createCorporatePrice + addSignerPrice + addParticipantPrice).toFixed(4))
+    console.log('PRICE: ', totalEstimatePrice)
     const gbpPriceEstimates = {
-      totalEstimate: parseInt((eosPriceEstimates.totalEstimate * price*100).toString().slice(0, 4), 10)/100,
-      certificate: parseInt((eosPriceEstimates.certificate * price*100).toString().slice(0, 4), 10)/100,
-      createSigner: parseInt((eosPriceEstimates.createSigner * price*100).toString().slice(0, 4), 10)/100,
-      createCorporate: parseInt((eosPriceEstimates.createCorporate * price*100).toString().slice(0, 4), 10)/100,
-      addSigner: parseInt((eosPriceEstimates.addSigner * price*100).toString().slice(0, 4), 10)/100,
-      addParticipant: parseInt((eosPriceEstimates.addParticipant * price*100).toString().slice(0, 4), 10)/100
+      totalEstimate: totalEstimatePrice,
+      certificate: certificatePrice,
+      createSigner: createSignerPrice,
+      createCorporate: createCorporatePrice,
+      addSigner: addSignerPrice,
+      addParticipant: addParticipantPrice
     }
     console.log('GBP: ', gbpPriceEstimates)
 
@@ -606,7 +614,7 @@ exports.tn_calculatePrice = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       errorCode: "",
-      message: "Estimated fee for creation is £" + result.gbpPrice,
+      message: "Estimated fee for creation is £" + result.gbpPrice.totalEstimate,
       data: result
     });
     
