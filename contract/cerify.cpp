@@ -35,12 +35,47 @@ private:
 	};
 	typedef eosio::multi_index<"corporate"_n, corporate> corporate_table;
 
+	template <typename T>
+	void cleanTable()
+	{
+		T db(_self, _self.value);
+		while (db.begin() != db.end())
+		{
+			auto itr = --db.end();
+			db.erase(itr);
+		}
+	}
+	template <typename T>
+	void cleanTableScope(uint64_t scope)
+	{
+		T db(_self, scope);
+		while (db.begin() != db.end())
+		{
+			auto itr = --db.end();
+			db.erase(itr);
+		}
+	}
+
 public:
 	using contract::contract;
 	cerify(name self, name code, datastream<const char *> ds) : contract(self, code, ds) {}
 
+	ACTION cleancorp()
+	{
+		require_auth(_self);
+		cleanTable<corporate_table>();
+	}
+
+	ACTION cleancert(uint64_t scope)
+	{
+		require_auth(_self);
+		cleanTableScope<certificate_table>(scope);
+	}
+
+
 	ACTION createcorp(uint64_t id, string name, uint64_t create_amount)
 	{
+		require_auth(_self);
 		corporate_table _corporate(_self, _self.value);
 
 		auto itr = _corporate.find(id);
@@ -70,6 +105,7 @@ public:
 
 	ACTION createcert(uint64_t id, uint64_t corporateid, string certtemplate, vector<uint64_t> assignees)
 	{
+		require_auth(_self);
 		certificate_table _certificate(_self, corporateid);
 		corporate_table _corporate(_self, _self.value);
 
@@ -92,6 +128,7 @@ public:
 
 	ACTION deletecert(uint64_t id, uint64_t corporateid)
 	{
+		require_auth(_self);
 		certificate_table _certificate(_self, corporateid);
 		corporate_table _corporate(_self, _self.value);
 
@@ -110,6 +147,7 @@ public:
 
 	ACTION addsigner(uint64_t id, uint64_t corporateid, vector<signer> signers)
 	{
+		require_auth(_self);
 		certificate_table _certificate(_self, corporateid);
 
 		auto itr = _certificate.find(id);
@@ -142,7 +180,5 @@ public:
 			}
 		}
 	}
-
-
 };
-EOSIO_DISPATCH(cerify, (createcorp)(addamount)(createcert)(deletecert)(addsigner)(signcert))
+EOSIO_DISPATCH(cerify, (createcorp)(addamount)(createcert)(deletecert)(addsigner)(signcert)(cleancert)(cleancorp))
