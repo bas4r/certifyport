@@ -35,42 +35,42 @@ private:
 	};
 	typedef eosio::multi_index<"corporate"_n, corporate> corporate_table;
 
-	template <typename T>
-	void cleanTable()
-	{
-		T db(_self, _self.value);
-		while (db.begin() != db.end())
-		{
-			auto itr = --db.end();
-			db.erase(itr);
-		}
-	}
-	template <typename T>
-	void cleanTableScope(uint64_t scope)
-	{
-		T db(_self, scope);
-		while (db.begin() != db.end())
-		{
-			auto itr = --db.end();
-			db.erase(itr);
-		}
-	}
+	// template <typename T>
+	// void cleanTable()
+	// {
+	// 	T db(_self, _self.value);
+	// 	while (db.begin() != db.end())
+	// 	{
+	// 		auto itr = --db.end();
+	// 		db.erase(itr);
+	// 	}
+	// }
+	// template <typename T>
+	// void cleanTableScope(uint64_t scope)
+	// {
+	// 	T db(_self, scope);
+	// 	while (db.begin() != db.end())
+	// 	{
+	// 		auto itr = --db.end();
+	// 		db.erase(itr);
+	// 	}
+	// }
 
 public:
 	using contract::contract;
 	cerify(name self, name code, datastream<const char *> ds) : contract(self, code, ds) {}
 
-	ACTION cleancorp()
-	{
-		require_auth(_self);
-		cleanTable<corporate_table>();
-	}
+	// ACTION cleancorp()
+	// {
+	// 	require_auth(_self);
+	// 	cleanTable<corporate_table>();
+	// }
 
-	ACTION cleancert(uint64_t scope)
-	{
-		require_auth(_self);
-		cleanTableScope<certificate_table>(scope);
-	}
+	// ACTION cleancert(uint64_t scope)
+	// {
+	// 	require_auth(_self);
+	// 	cleanTableScope<certificate_table>(scope);
+	// }
 
 
 	ACTION createcorp(uint64_t id, string name, uint64_t create_amount)
@@ -181,4 +181,4 @@ public:
 		}
 	}
 };
-EOSIO_DISPATCH(cerify, (createcorp)(addamount)(createcert)(deletecert)(addsigner)(signcert)(cleancert)(cleancorp))
+EOSIO_DISPATCH(cerify, (createcorp)(addamount)(createcert)(deletecert)(addsigner)(signcert)/*(cleancert)(cleancorp)*/)

@@ -58,21 +58,6 @@
             ]
         },
         {
-            "name": "cleancert",
-            "base": "",
-            "fields": [
-                {
-                    "name": "scope",
-                    "type": "uint64"
-                }
-            ]
-        },
-        {
-            "name": "cleancorp",
-            "base": "",
-            "fields": []
-        },
-        {
             "name": "corporate",
             "base": "",
             "fields": [
@@ -186,16 +171,6 @@
         {
             "name": "addsigner",
             "type": "addsigner",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "cleancert",
-            "type": "cleancert",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "cleancorp",
-            "type": "cleancorp",
             "ricardian_contract": ""
         },
         {
