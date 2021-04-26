@@ -4,20 +4,6 @@
     "types": [],
     "structs": [
         {
-            "name": "addamount",
-            "base": "",
-            "fields": [
-                {
-                    "name": "id",
-                    "type": "uint64"
-                },
-                {
-                    "name": "amount",
-                    "type": "uint64"
-                }
-            ]
-        },
-        {
             "name": "addsigner",
             "base": "",
             "fields": [
@@ -58,6 +44,21 @@
             ]
         },
         {
+            "name": "cleancert",
+            "base": "",
+            "fields": [
+                {
+                    "name": "scope",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "cleancorp",
+            "base": "",
+            "fields": []
+        },
+        {
             "name": "corporate",
             "base": "",
             "fields": [
@@ -68,10 +69,6 @@
                 {
                     "name": "name",
                     "type": "string"
-                },
-                {
-                    "name": "create_amount",
-                    "type": "uint64"
                 }
             ]
         },
@@ -108,10 +105,6 @@
                 {
                     "name": "name",
                     "type": "string"
-                },
-                {
-                    "name": "create_amount",
-                    "type": "uint64"
                 }
             ]
         },
@@ -164,13 +157,18 @@
     ],
     "actions": [
         {
-            "name": "addamount",
-            "type": "addamount",
+            "name": "addsigner",
+            "type": "addsigner",
             "ricardian_contract": ""
         },
         {
-            "name": "addsigner",
-            "type": "addsigner",
+            "name": "cleancert",
+            "type": "cleancert",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "cleancorp",
+            "type": "cleancorp",
             "ricardian_contract": ""
         },
         {

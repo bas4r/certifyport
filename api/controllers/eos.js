@@ -12,7 +12,7 @@ const rpc = new JsonRpc(process.env.EOS_URL, { fetch });
 const eos = new Api({ rpc, signatureProvider, textDecoder: new TextDecoder(), textEncoder: new TextEncoder() });
 exports.tn_createCorporate = async (req, res, next) => {
   try {
-    const { corporateId, corporateName, createAmount } = req.body;
+    const { corporateId, corporateName } = req.body;
     // kontratın addcustomer actionını çağırma
     const result = await eos.transact({
       actions: [{
@@ -24,8 +24,7 @@ exports.tn_createCorporate = async (req, res, next) => {
         }],
         data: {
           id: corporateId,
-          name: corporateName,
-          create_amount: createAmount,
+          name: corporateName
         },
       }]
     },
@@ -38,46 +37,6 @@ exports.tn_createCorporate = async (req, res, next) => {
       success: true,
       errorCode: "",
       message: corporateName + " with " + corporateId + " id is added.",
-      data: result
-    });
-  }
-  catch (error) {
-    return res.status(400).json({
-      success: false,
-      errorCode: error,
-      message: "Something went wrong, please check your inputs.",
-      data: {}
-    });
-  }
-}
-
-exports.tn_addAmount = async (req, res, next) => {
-  try {
-    const { corporateId, amount } = req.body;
-    // kontratın addcustomer actionını çağırma
-    const result = await eos.transact({
-      actions: [{
-        account: process.env.EOS_CONTRACT,
-        name: 'addamount',
-        authorization: [{
-          actor: process.env.EOS_CONTRACT,
-          permission: 'active',
-        }],
-        data: {
-          id: corporateId,
-          amount
-        },
-      }]
-    },
-      {
-        blocksBehind: 3,
-        expireSeconds: 30,
-      });
-
-    return res.status(201).json({
-      success: true,
-      errorCode: "",
-      message: amount + " added to " + corporateId + " .",
       data: result
     });
   }
@@ -176,7 +135,6 @@ exports.tn_deleteCertificate = async (req, res, next) => {
 exports.tn_addSigner = async (req, res, next) => {
   try {
     const { certificateId, corporateId, signers } = req.body;
-    console.log(signers);
     // kontratın addcustomer actionını çağırma
     const result = await eos.transact({
       actions: [{
@@ -431,7 +389,7 @@ exports.tn_createMultiple = async (req, res, next) => {
     const actions = []
     const {corporate, signers, certificate} = req.body
     if(corporate) {
-      const {corporateId, corporateName, createAmount} = corporate
+      const {corporateId, corporateName} = corporate
       actions.push(
         {
           account: process.env.EOS_CONTRACT,
@@ -443,7 +401,6 @@ exports.tn_createMultiple = async (req, res, next) => {
           data: {
             id: corporateId,
             name: corporateName,
-            create_amount: createAmount,
           },
         }
       )
@@ -539,7 +496,6 @@ exports.tn_createMultiple = async (req, res, next) => {
     });
   }
   catch (error) {
-    console.log(error)
     return res.status(400).json({
       success: false,
       errorCode: error,
@@ -585,17 +541,13 @@ exports.tn_calculatePrice = async (req, res, next) => {
       addSigner: (ramPriceEOS * addingSignerBytes).toFixed(4),
       addParticipant: (ramPriceEOS * addingParticipantBytes).toFixed(4)
     }
-    console.log('here', eosPriceEstimates)
     const {price} = await cryptoTickerPrice.getCryptoPrice('GBP', 'EOS')
     const certificatePrice = Number((eosPriceEstimates.certificate * price).toFixed(4))
-    console.log('here2', certificatePrice)
     const createSignerPrice = Number((eosPriceEstimates.createSigner * price).toFixed(4))
     const createCorporatePrice = Number((eosPriceEstimates.createCorporate * price).toFixed(4))
     const addSignerPrice = Number((eosPriceEstimates.addSigner * price).toFixed(4))
     const addParticipantPrice = Number((eosPriceEstimates.addParticipant * price).toFixed(4))
-    console.log('here2', addParticipantPrice)
     const totalEstimatePrice = Number((certificatePrice + createSignerPrice + createCorporatePrice + addSignerPrice + addParticipantPrice).toFixed(4))
-    console.log('PRICE: ', totalEstimatePrice)
     const gbpPriceEstimates = {
       totalEstimate: totalEstimatePrice,
       certificate: certificatePrice,
@@ -604,7 +556,6 @@ exports.tn_calculatePrice = async (req, res, next) => {
       addSigner: addSignerPrice,
       addParticipant: addParticipantPrice
     }
-    console.log('GBP: ', gbpPriceEstimates)
 
     const result = {
       totalBytes,
@@ -684,7 +635,6 @@ exports.tn_getCertificate = async (req, res, next) => {
       throw new Error("Valid certificateId had not been provided.");
     }
     const result = await getTable(process.env.EOS_CONTRACT, "certificate", corporateId, certificateId);
-    console.log(result);
     return res.status(201).json({
       success: true,
       errorCode: "",

@@ -29,51 +29,49 @@ private:
 	{
 		uint64_t id;
 		string name;
-		uint64_t create_amount;
 
 		uint64_t primary_key() const { return id; }
 	};
 	typedef eosio::multi_index<"corporate"_n, corporate> corporate_table;
 
-	// template <typename T>
-	// void cleanTable()
-	// {
-	// 	T db(_self, _self.value);
-	// 	while (db.begin() != db.end())
-	// 	{
-	// 		auto itr = --db.end();
-	// 		db.erase(itr);
-	// 	}
-	// }
-	// template <typename T>
-	// void cleanTableScope(uint64_t scope)
-	// {
-	// 	T db(_self, scope);
-	// 	while (db.begin() != db.end())
-	// 	{
-	// 		auto itr = --db.end();
-	// 		db.erase(itr);
-	// 	}
-	// }
+	template <typename T>
+	void cleanTable()
+	{
+		T db(_self, _self.value);
+		while (db.begin() != db.end())
+		{
+			auto itr = --db.end();
+			db.erase(itr);
+		}
+	}
+	template <typename T>
+	void cleanTableScope(uint64_t scope)
+	{
+		T db(_self, scope);
+		while (db.begin() != db.end())
+		{
+			auto itr = --db.end();
+			db.erase(itr);
+		}
+	}
 
 public:
 	using contract::contract;
 	cerify(name self, name code, datastream<const char *> ds) : contract(self, code, ds) {}
 
-	// ACTION cleancorp()
-	// {
-	// 	require_auth(_self);
-	// 	cleanTable<corporate_table>();
-	// }
+	ACTION cleancorp()
+	{
+		require_auth(_self);
+		cleanTable<corporate_table>();
+	}
 
-	// ACTION cleancert(uint64_t scope)
-	// {
-	// 	require_auth(_self);
-	// 	cleanTableScope<certificate_table>(scope);
-	// }
+	ACTION cleancert(uint64_t scope)
+	{
+		require_auth(_self);
+		cleanTableScope<certificate_table>(scope);
+	}
 
-
-	ACTION createcorp(uint64_t id, string name, uint64_t create_amount)
+	ACTION createcorp(uint64_t id, string name)
 	{
 		require_auth(_self);
 		corporate_table _corporate(_self, _self.value);
@@ -84,22 +82,6 @@ public:
 		_corporate.emplace(_self, [&](auto &c) {
 			c.id = id;
 			c.name = name;
-			c.create_amount = create_amount;
-		});
-	}
-
-	ACTION addamount(uint64_t id, uint64_t amount)
-	{
-		require_auth(_self);
-
-		corporate_table _corporate(_self, _self.value);
-
-		auto itr = _corporate.find(id);
-		check(itr != _corporate.end(), "Company has not been found.");
-		uint64_t currentAmount = itr->create_amount;
-
-		_corporate.modify(itr, _self, [&](auto &c) {
-			c.create_amount = currentAmount + amount;
 		});
 	}
 
@@ -111,10 +93,6 @@ public:
 
 		auto corp_itr = _corporate.find(corporateid);
 		check(corp_itr != _corporate.end(), "Corporate couldn't found.");
-
-		_corporate.modify(corp_itr, _self, [&](auto &co) {
-			co.create_amount = corp_itr->create_amount - 1;
-		});
 
 		auto itr = _certificate.find(id);
 		check(itr == _certificate.end(), "Certificate had been added before.");
@@ -134,10 +112,6 @@ public:
 
 		auto corp_itr = _corporate.find(corporateid);
 		check(corp_itr != _corporate.end(), "Corporate couldn't found.");
-
-		_corporate.modify(corp_itr, _self, [&](auto &co) {
-			co.create_amount = corp_itr->create_amount + 1;
-		});
 
 		auto itr = _certificate.find(id);
 		check(itr != _certificate.end(), "No certificate found.");
@@ -181,4 +155,4 @@ public:
 		}
 	}
 };
-EOSIO_DISPATCH(cerify, (createcorp)(addamount)(createcert)(deletecert)(addsigner)(signcert)/*(cleancert)(cleancorp)*/)
+EOSIO_DISPATCH(cerify, (createcorp)(createcert)(deletecert)(addsigner)(signcert)(cleancert)(cleancorp))
