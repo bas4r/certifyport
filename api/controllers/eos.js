@@ -3,7 +3,8 @@ const ecc = require('eosjs-ecc')
 const fetch = require('node-fetch');                                    // node only; not needed in browsers
 const { JsSignatureProvider } = require('eosjs/dist/eosjs-jssig');      // development only
 const { TextEncoder, TextDecoder } = require('util');
-const cryptoTickerPrice = require('crypto-price')
+const CoinGecko = require('coingecko-api');
+const CoinGeckoClient = new CoinGecko();
 
 const defaultPrivateKey = process.env.EOS_PRIVATE_KEY;
 const signatureProvider = new JsSignatureProvider([defaultPrivateKey]);
@@ -541,7 +542,11 @@ exports.tn_calculatePrice = async (req, res, next) => {
       addSigner: (ramPriceEOS * addingSignerBytes).toFixed(4),
       addParticipant: (ramPriceEOS * addingParticipantBytes).toFixed(4)
     }
-    const {price} = await cryptoTickerPrice.getCryptoPrice('GBP', 'EOS')
+    const {data} = await CoinGeckoClient.simple.price({
+      ids: 'eos',
+      vs_currencies: 'gbp',
+    });
+    const {gbp: price} = data.eos
     const certificatePrice = Number((eosPriceEstimates.certificate * price).toFixed(4))
     const createSignerPrice = Number((eosPriceEstimates.createSigner * price).toFixed(4))
     const createCorporatePrice = Number((eosPriceEstimates.createCorporate * price).toFixed(4))
