@@ -12,6 +12,7 @@ router.post("/createsigner", eosController.tn_createSigner);
 router.post("/createsignerandconfirm", eosController.tn_createSignerAndConfirm);
 router.post("/createmultiple", eosController.tn_createMultiple);
 router.post("/calculateprice", eosController.tn_calculatePrice);
+router.get("/getparticipant", eosController.tn_getParticipant);
 router.get("/getcertificate", eosController.tn_getCertificate);
 router.get("/getinstitution", eosController.tn_getInstitution);
 router.get("/")
