@@ -11,21 +11,21 @@ const signatureProvider = new JsSignatureProvider([defaultPrivateKey]);
 
 const rpc = new JsonRpc(process.env.EOS_URL, { fetch });
 const eos = new Api({ rpc, signatureProvider, textDecoder: new TextDecoder(), textEncoder: new TextEncoder() });
-exports.tn_createCorporate = async (req, res, next) => {
+exports.tn_createInstitution = async (req, res, next) => {
   try {
-    const { corporateId, corporateName } = req.body;
+    const { institutionId, institutionName } = req.body;
     // kontratın addcustomer actionını çağırma
     const result = await eos.transact({
       actions: [{
         account: process.env.EOS_CONTRACT,
-        name: 'createcorp',
+        name: 'createinst',
         authorization: [{
           actor: process.env.EOS_CONTRACT,
           permission: 'active',
         }],
         data: {
-          id: corporateId,
-          name: corporateName
+          id: institutionId,
+          name: institutionName
         },
       }]
     },
@@ -37,7 +37,7 @@ exports.tn_createCorporate = async (req, res, next) => {
     return res.status(201).json({
       success: true,
       errorCode: "",
-      message: corporateName + " with " + corporateId + " id is added.",
+      message: institutionName + " with " + institutionId + " id is added.",
       data: result
     });
   }
@@ -53,7 +53,7 @@ exports.tn_createCorporate = async (req, res, next) => {
 
 exports.tn_createCertificate = async (req, res, next) => {
   try {
-    const { certificateId, corporateId, certificateTemplate, assignees } = req.body;
+    const { certificateId, institutionId, certificateName, participants } = req.body;
     // kontratın addcustomer actionını çağırma
     const result = await eos.transact({
       actions: [{
@@ -65,9 +65,9 @@ exports.tn_createCertificate = async (req, res, next) => {
         }],
         data: {
           id: certificateId,
-          corporateid: corporateId,
-          certtemplate: certificateTemplate,
-          assignees
+          institutionid: institutionId,
+          certificatename: certificateName,
+          participants
         },
       }]
     },
@@ -79,7 +79,7 @@ exports.tn_createCertificate = async (req, res, next) => {
     return res.status(201).json({
       success: true,
       errorCode: "",
-      message: "Certificate with " + certificateId + " id is added for corporate id " + corporateId + ".",
+      message: "Certificate with " + certificateId + " id is added for institution id " + institutionId + ".",
       data: result
     });
   }
@@ -95,7 +95,7 @@ exports.tn_createCertificate = async (req, res, next) => {
 
 exports.tn_deleteCertificate = async (req, res, next) => {
   try {
-    const { certificateId, corporateId } = req.body;
+    const { certificateId, institutionId } = req.body;
     // kontratın addcustomer actionını çağırma
     const result = await eos.transact({
       actions: [{
@@ -107,7 +107,7 @@ exports.tn_deleteCertificate = async (req, res, next) => {
         }],
         data: {
           id: certificateId,
-          corporateid: corporateId
+          institutionid: institutionId
         },
       }]
     },
@@ -119,7 +119,7 @@ exports.tn_deleteCertificate = async (req, res, next) => {
     return res.status(201).json({
       success: true,
       errorCode: "",
-      message: "Certificate with " + certificateId + " id is deleted from corporate id " + corporateId + ".",
+      message: "Certificate with " + certificateId + " id is deleted from institution id " + institutionId + ".",
       data: result
     });
   }
@@ -135,7 +135,7 @@ exports.tn_deleteCertificate = async (req, res, next) => {
 
 exports.tn_addSigner = async (req, res, next) => {
   try {
-    const { certificateId, corporateId, signers } = req.body;
+    const { certificateId, institutionId, signers } = req.body;
     // kontratın addcustomer actionını çağırma
     const result = await eos.transact({
       actions: [{
@@ -147,7 +147,7 @@ exports.tn_addSigner = async (req, res, next) => {
         }],
         data: {
           id: certificateId,
-          corporateid: corporateId,
+          institutionid: institutionId,
           signers
         },
       }]
@@ -388,26 +388,26 @@ exports.tn_createMultiple = async (req, res, next) => {
   try {
     const { head_block_num: initialBlockNumber } = await rpc.get_info()
     const actions = []
-    const {corporate, signers, certificate} = req.body
-    if(corporate) {
-      const {corporateId, corporateName} = corporate
+    const {institution, signers, certificate} = req.body
+    if(institution) {
+      const {institutionId, institutionName} = institution
       actions.push(
         {
           account: process.env.EOS_CONTRACT,
-          name: 'createcorp',
+          name: 'createinst',
           authorization: [{
             actor: process.env.EOS_CONTRACT,
             permission: 'active',
           }],
           data: {
-            id: corporateId,
-            name: corporateName,
+            id: institutionId,
+            name: institutionName,
           },
         }
       )
     }
     if(certificate) {
-      const {corporateId, certificateId, certificateTemplate, assignees} = certificate
+      const {institutionId, certificateId, certificateName, assignees} = certificate
       actions.push(
         {
           account: process.env.EOS_CONTRACT,
@@ -418,15 +418,15 @@ exports.tn_createMultiple = async (req, res, next) => {
           }],
           data: {
             id: certificateId,
-            corporateid: corporateId,
-            certtemplate: certificateTemplate,
+            institutionid: institutionId,
+            certificatename: certificateName,
             assignees
           },
         }
       )
     }
     if(signers && signers.length > 0){
-      const {corporateId, certificateId} = certificate
+      const {institutionId, certificateId} = certificate
       actions.push(
         {
           account: process.env.EOS_CONTRACT,
@@ -437,7 +437,7 @@ exports.tn_createMultiple = async (req, res, next) => {
           }],
           data: {
             id: certificateId,
-            corporateid: corporateId,
+            institutionid: institutionId,
             signers
           },
         }
@@ -517,15 +517,15 @@ async function blockHasTransaction(block, transactionId) {
 
 exports.tn_calculatePrice = async (req, res, next) => {
   try {
-    const { signer_create: signerCreate, corporate_create: corporateCreate, signer_add: signerAdd, participant_add: participantAdd } = req.body
+    const { signer_create: signerCreate, institution_create: institutionCreate, signer_add: signerAdd, participant_add: participantAdd } = req.body
 
     const certificateBytes = 124
     const signerCreateBytes = signerCreate * 3048
-    const corporateCreateBytes = corporateCreate * 143
+    const institutionCreateBytes = institutionCreate * 143
     const addingSignerBytes = signerAdd * 9
     const addingParticipantBytes = participantAdd * 8
     const stringLengthEstimation = 20
-    const totalBytes =  certificateBytes + signerCreateBytes + corporateCreateBytes + addingSignerBytes + addingParticipantBytes + stringLengthEstimation
+    const totalBytes =  certificateBytes + signerCreateBytes + institutionCreateBytes + addingSignerBytes + addingParticipantBytes + stringLengthEstimation
 
     const {quote , base} = await getTable('eosio', 'rammarket', 'eosio')
     const quoteBalance = quote.balance.slice(0,-4)
@@ -538,7 +538,7 @@ exports.tn_calculatePrice = async (req, res, next) => {
       totalEstimate: (ramPriceEOS * totalBytes).toFixed(4),
       certificate: (ramPriceEOS * certificateBytes).toFixed(4),
       createSigner: (ramPriceEOS * signerCreateBytes).toFixed(4),
-      createCorporate: (ramPriceEOS * corporateCreateBytes).toFixed(4),
+      createInstitution: (ramPriceEOS * institutionCreateBytes).toFixed(4),
       addSigner: (ramPriceEOS * addingSignerBytes).toFixed(4),
       addParticipant: (ramPriceEOS * addingParticipantBytes).toFixed(4)
     }
@@ -549,15 +549,15 @@ exports.tn_calculatePrice = async (req, res, next) => {
     const {gbp: price} = data.eos
     const certificatePrice = Number((eosPriceEstimates.certificate * price).toFixed(4))
     const createSignerPrice = Number((eosPriceEstimates.createSigner * price).toFixed(4))
-    const createCorporatePrice = Number((eosPriceEstimates.createCorporate * price).toFixed(4))
+    const createInstitutionPrice = Number((eosPriceEstimates.createInstitution * price).toFixed(4))
     const addSignerPrice = Number((eosPriceEstimates.addSigner * price).toFixed(4))
     const addParticipantPrice = Number((eosPriceEstimates.addParticipant * price).toFixed(4))
-    const totalEstimatePrice = Number((certificatePrice + createSignerPrice + createCorporatePrice + addSignerPrice + addParticipantPrice).toFixed(4))
+    const totalEstimatePrice = Number((certificatePrice + createSignerPrice + createInstitutionPrice + addSignerPrice + addParticipantPrice).toFixed(4))
     const gbpPriceEstimates = {
       totalEstimate: totalEstimatePrice,
       certificate: certificatePrice,
       createSigner: createSignerPrice,
-      createCorporate: createCorporatePrice,
+      createInstitution: createInstitutionPrice,
       addSigner: addSignerPrice,
       addParticipant: addParticipantPrice
     }
@@ -587,7 +587,7 @@ exports.tn_calculatePrice = async (req, res, next) => {
 
 exports.tn_signCertificate = async (req, res, next) => {
   try {
-    const { signer, certificateId, corporateId, signerPrivate } = req.body;
+    const { signer, certificateId, institutionId, signerPrivate } = req.body;
     const signSignatureProvider = new JsSignatureProvider([signerPrivate, defaultPrivateKey]);
     const signEos = new Api({ rpc, signatureProvider: signSignatureProvider, textDecoder: new TextDecoder(), textEncoder: new TextEncoder() });
     const result = await signEos.transact({
@@ -603,7 +603,7 @@ exports.tn_signCertificate = async (req, res, next) => {
         }],
         data: {
           id: certificateId,
-          corporateid: corporateId,
+          institutionid: institutionId,
           signerr: signer
         },
       }]
@@ -632,14 +632,14 @@ exports.tn_signCertificate = async (req, res, next) => {
 
 exports.tn_getCertificate = async (req, res, next) => {
   try {
-    const { certificateId, corporateId } = req.query;
-    if (typeof corporateId === 'undefined') {
-      throw new Error("Valid corporateId had not been provided.");
+    const { certificateId, institutionId } = req.query;
+    if (typeof institutionId === 'undefined') {
+      throw new Error("Valid institutionId had not been provided.");
     }
     if (typeof certificateId === 'undefined') {
       throw new Error("Valid certificateId had not been provided.");
     }
-    const result = await getTable(process.env.EOS_CONTRACT, "certificate", corporateId, certificateId);
+    const result = await getTable(process.env.EOS_CONTRACT, "certificate", institutionId, certificateId);
     return res.status(201).json({
       success: true,
       errorCode: "",
@@ -657,17 +657,17 @@ exports.tn_getCertificate = async (req, res, next) => {
   }
 }
 
-exports.tn_getCorporate = async (req, res, next) => {
+exports.tn_getInstitution = async (req, res, next) => {
   try {
-    const { corporateId } = req.query;
-    if (typeof corporateId === 'undefined') {
-      throw new Error("Valid corporateId had not been provided.");
+    const { institutionId } = req.query;
+    if (typeof institutionId === 'undefined') {
+      throw new Error("Valid institutionId had not been provided.");
     }
-    const result = await getTable(process.env.EOS_CONTRACT, "corporate", process.env.EOS_CONTRACT, corporateId);
+    const result = await getTable(process.env.EOS_CONTRACT, "institution", process.env.EOS_CONTRACT, institutionId);
     return res.status(201).json({
       success: true,
       errorCode: "",
-      message: "Corporate with " + corporateId + " id returned",
+      message: "Institution with " + institutionId + " id returned",
       data: result
     });
   }
