@@ -761,7 +761,7 @@ exports.tn_getParticipant = async (req, res, next) => {
 
     const { participants } = result;
 
-    const participant = participants?.filter(
+    const participant = participants?.find(
       (part) => part === participantName
     );
 
