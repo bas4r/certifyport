@@ -210,10 +210,12 @@ exports.tn_addSigner = async (req, res, next) => {
   }
 };
 
-exports.tn_createSigner = async (req, res, next) => {
+exports.tn_createAccount = async (req, res, next) => {
   try {
     const privateKey = await ecc.randomKey();
     const publicKey = await ecc.privateToPublic(privateKey);
+
+    const { accountName } = req.body
 
     const result = await eos.transact(
       {
@@ -229,7 +231,7 @@ exports.tn_createSigner = async (req, res, next) => {
             ],
             data: {
               creator: process.env.EOS_CONTRACT,
-              name: req.body.accountName,
+              name: accountName,
               owner: {
                 threshold: 1,
                 keys: [
@@ -265,7 +267,7 @@ exports.tn_createSigner = async (req, res, next) => {
             ],
             data: {
               payer: process.env.EOS_CONTRACT,
-              receiver: req.body.accountName,
+              receiver: accountName,
               bytes: 3048,
             },
           },
@@ -280,7 +282,7 @@ exports.tn_createSigner = async (req, res, next) => {
             ],
             data: {
               from: process.env.EOS_CONTRACT,
-              receiver: req.body.accountName,
+              receiver: accountName,
               stake_net_quantity: "0.0001 EOS",
               stake_cpu_quantity: "0.0001 EOS",
               transfer: false,
@@ -296,7 +298,7 @@ exports.tn_createSigner = async (req, res, next) => {
     return res.status(201).json({
       success: true,
       errorCode: "",
-      message: "Account " + req.body.accountName + " created ",
+      message: "Account " + accountName + " created ",
       keys: { privateKey: privateKey, publicKey: publicKey },
       data: result,
     });
@@ -310,11 +312,12 @@ exports.tn_createSigner = async (req, res, next) => {
   }
 };
 
-exports.tn_createSignerAndConfirm = async (req, res, next) => {
+exports.tn_createAccountAndConfirm = async (req, res, next) => {
   try {
     const privateKey = await ecc.randomKey();
     const publicKey = await ecc.privateToPublic(privateKey);
     const { head_block_num: initialBlockNumber } = await rpc.get_info();
+    const { accountName } = req.body
     const result = await eos.transact(
       {
         actions: [
@@ -329,7 +332,7 @@ exports.tn_createSignerAndConfirm = async (req, res, next) => {
             ],
             data: {
               creator: process.env.EOS_CONTRACT,
-              name: req.body.accountName,
+              name: accountName,
               owner: {
                 threshold: 1,
                 keys: [
@@ -365,7 +368,7 @@ exports.tn_createSignerAndConfirm = async (req, res, next) => {
             ],
             data: {
               payer: process.env.EOS_CONTRACT,
-              receiver: req.body.accountName,
+              receiver: accountName,
               bytes: 3048,
             },
           },
@@ -380,7 +383,7 @@ exports.tn_createSignerAndConfirm = async (req, res, next) => {
             ],
             data: {
               from: process.env.EOS_CONTRACT,
-              receiver: req.body.accountName,
+              receiver: accountName,
               stake_net_quantity: "0.0001 EOS",
               stake_cpu_quantity: "0.0001 EOS",
               transfer: false,
@@ -426,7 +429,7 @@ exports.tn_createSignerAndConfirm = async (req, res, next) => {
       return res.status(201).json({
         success: true,
         errorCode: "",
-        message: "Account " + req.body.accountName + " created ",
+        message: "Account " + accountName + " created ",
         keys: { privateKey: privateKey, publicKey: publicKey },
         data: result,
       });
