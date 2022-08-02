@@ -77,12 +77,12 @@ public:
 		institution_table _institution(_self, _self.value);
 
 		auto itr = _institution.find(id);
-		check(itr == _institution.end(), "Company had been added before.");
+		check(itr == _institution.end(), "Institution had been added before.");
 
-		_institution.emplace(_self, [&](auto &c) {
+		_institution.emplace(_self, [&](auto &c)
+							 {
 			c.id = id;
-			c.name = name;
-		});
+			c.name = name; });
 	}
 
 	ACTION createcert(uint64_t id, uint64_t institutionid, string certificatename, vector<name> participants)
@@ -97,11 +97,11 @@ public:
 		auto itr = _certificate.find(id);
 		check(itr == _certificate.end(), "Certificate had been added before.");
 
-		_certificate.emplace(_self, [&](auto &c) {
+		_certificate.emplace(_self, [&](auto &c)
+							 {
 			c.id = id;
 			c.certificatename = certificatename;
-			c.participants = participants;
-		});
+			c.participants = participants; });
 	}
 
 	ACTION deletecert(uint64_t id, uint64_t institutionid)
@@ -129,9 +129,8 @@ public:
 		vector<signer> newsign = itr->signers;
 		newsign.insert(newsign.end(), signers.begin(), signers.end());
 
-		_certificate.modify(itr, _self, [&](auto &c) {
-			c.signers = newsign;
-		});
+		_certificate.modify(itr, _self, [&](auto &c)
+							{ c.signers = newsign; });
 	}
 
 	ACTION signcert(uint64_t id, uint64_t institutionid, name signerr)
@@ -147,9 +146,8 @@ public:
 			if (signersArr[i].name == signerr)
 			{
 				signersArr[i].issigned = 1;
-				_certificate.modify(itr, _self, [&](auto &c) {
-					c.signers = signersArr;
-				});
+				_certificate.modify(itr, _self, [&](auto &c)
+									{ c.signers = signersArr; });
 				break;
 			}
 		}
