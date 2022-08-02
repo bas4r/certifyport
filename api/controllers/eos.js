@@ -411,7 +411,7 @@ exports.tn_createAccountAndConfirm = async (req, res, next) => {
 
     const lookForTrx = async () => {
       return new Promise(async (resolve, reject) => {
-        for (; blockNumber - initialBlockNumber < 20; ) {
+        for (; blockNumber - initialBlockNumber < 20;) {
           currentBlock = await rpc.get_block(blockNumber);
           blockNumber++;
           const hasTrx = await blockHasTransaction(currentBlock, transactionId);
@@ -473,7 +473,7 @@ exports.tn_createMultiple = async (req, res, next) => {
       });
     }
     if (certificate) {
-      const { institutionId, certificateId, certificateName, assignees } =
+      const { institutionId, certificateId, certificateName, participants } =
         certificate;
       actions.push({
         account: process.env.EOS_CONTRACT,
@@ -488,7 +488,7 @@ exports.tn_createMultiple = async (req, res, next) => {
           id: certificateId,
           institutionid: institutionId,
           certificatename: certificateName,
-          assignees,
+          participants,
         },
       });
     }
@@ -533,7 +533,7 @@ exports.tn_createMultiple = async (req, res, next) => {
 
     const lookForTrx = async () => {
       return new Promise(async (resolve, reject) => {
-        for (; blockNumber - initialBlockNumber < 40; ) {
+        for (; blockNumber - initialBlockNumber < 40;) {
           try {
             currentBlock = await rpc.get_block(blockNumber);
           } catch (err) {
