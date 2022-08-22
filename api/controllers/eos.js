@@ -421,6 +421,10 @@ exports.tn_createAccountAndConfirm = async (req, res, next) => {
           }
           await delay();
         }
+        const foundAccount = await rpc.get_account(accountName)
+        if (foundAccount?.account_name === accountName) {
+          resolve(true);
+        }
         reject("Check block for transaction timeout!");
       });
     };
